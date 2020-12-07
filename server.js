@@ -77,6 +77,71 @@ app.get('/products/:product_id', async (req, res) => {
 
 })
 
+app.get('/products/:product_id/styles', async (req, res) => {
+
+  let productId = req.params.product_id;
+
+  let productStylesByIdQuery = `SELECT id as style_id,
+                                name,
+                                original_price,
+                                sale_price,
+                                default_style as "default?"
+                              FROM sdc.styles s
+                              JOIN sdc.product_style_map ps on ps.style_id = s.id
+                              WHERE ps.product_id = ` + productId;
+
+  let productStylePhotosQuery = `SELECT sp.style_id,
+                                  thumbnail_url,
+                                  url
+                                FROM sdc.style_photos sp
+                                JOIN sdc.product_style_map ps on ps.style_id = sp.style_id
+                                WHERE ps.product_id = ` + productId;
+
+  let productStyleSkusQuery = `SELECT ps.style_id,
+                                sku_id,
+                                quantity,
+                                size
+                              FROM sdc.skus s
+                              JOIN sdc.styles_skus_map ss on ss.sku_id = s.id
+                              JOIN sdc.product_style_map ps on ss.style_id = ps.style_id
+                              WHERE ps.product_id = ` + productId;
+  /// run queries
+  const productStylesById = await pool.query(productStylesByIdQuery);
+  const productStylePhotos = await pool.query(productStylePhotosQuery);
+  const productStyleSkus = await pool.query(productStyleSkusQuery);
+
+  // then format data
+    let productWithPhotosAndSkus = {
+      product_id: productId,
+      results : productStylesById.rows,
+    };
+
+  //filtering amd formating data according to style id
+  productWithPhotosAndSkus.results.forEach((style) => {
+    // adding photos property to productWithPhotosAndSkus and grouping photos to each style by style id
+    style.photos = productStylePhotos.rows.filter((photo) => {
+      return photo.style_id === style.style_id;
+    });
+
+
+    // initializing skus object to store each sku_id with size and quantity properties
+    let skus = {};
+    // adding size and quantity properties to skus property which key name matches each sku_id
+    productStyleSkus.rows.forEach((sku) => {
+      if (sku.style_id === style.style_id) {
+        skus[sku.sku_id] = {
+          quantity: sku.quantity,
+          size: sku.size
+        };
+      }
+    });
+
+    style['skus'] = skus;
+  })
+
+  res.send(productWithPhotosAndSkus);
+})
+
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
