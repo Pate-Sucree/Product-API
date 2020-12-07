@@ -1,6 +1,7 @@
+require('newrelic');
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = 4000;
 const { Pool, Client } = require('pg');
 const querystring = require('querystring');
 
@@ -14,7 +15,7 @@ const pool = new Pool({
 
 
 
-
+// gets a list of products with page and count query params
 app.get('/products', async (req, res) => {
 
   let page = req.query.page || 1;
@@ -40,6 +41,7 @@ app.get('/products', async (req, res) => {
 
 })
 
+// gets single product by id
 app.get('/products/:product_id', async (req, res) => {
 
   let productId = req.params.product_id;
@@ -77,6 +79,7 @@ app.get('/products/:product_id', async (req, res) => {
 
 })
 
+// gets product styles by product id
 app.get('/products/:product_id/styles', async (req, res) => {
 
   let productId = req.params.product_id;
@@ -124,7 +127,7 @@ app.get('/products/:product_id/styles', async (req, res) => {
     });
 
 
-    // initializing skus object to store each sku_id with size and quantity properties
+    // initializing skus object to store each sku_id as object key that holds size and quantity properties
     let skus = {};
     // adding size and quantity properties to skus property which key name matches each sku_id
     productStyleSkus.rows.forEach((sku) => {
@@ -137,13 +140,34 @@ app.get('/products/:product_id/styles', async (req, res) => {
     });
 
     style['skus'] = skus;
-  })
+  });
 
   res.send(productWithPhotosAndSkus);
 })
 
+// gets related products by product id
+app.get('/products/:product_id/related', async (req, res) => {
+
+  let productId = req.params.product_id;
+
+  let relatedProductsByIdQuery = `SELECT current_product_id,
+                                  related_product_id
+                                FROM sdc.related_products
+                                WHERE current_product_id = ` + productId;
+
+  const relatedProducts = await pool.query(relatedProductsByIdQuery);
+
+  let relatedProductIds = [];
+
+  relatedProducts.rows.forEach((product) =>{
+    relatedProductIds.push(product.related_product_id);
+  });
+
+  res.send(relatedProductIds);
+})
+
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+  console.log(`Product-API app listening at http://localhost:${port}`)
 })
 
 
