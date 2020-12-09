@@ -14,6 +14,8 @@ const pool = new Pool({
 })
 
 
+let cache = {};
+
 
 // gets a list of products with page and count query params
 app.get('/products', async (req, res) => {
@@ -108,10 +110,30 @@ app.get('/products/:product_id/styles', async (req, res) => {
                               JOIN sdc.styles_skus_map ss on ss.sku_id = s.id
                               JOIN sdc.product_style_map ps on ss.style_id = ps.style_id
                               WHERE ps.product_id = ` + productId;
-  /// run queries
-  const productStylesById = await pool.query(productStylesByIdQuery);
-  const productStylePhotos = await pool.query(productStylePhotosQuery);
-  const productStyleSkus = await pool.query(productStyleSkusQuery);
+
+  let productStylesById;
+  let productStylePhotos;
+  let productStyleSkus;
+
+
+  if (true || cache[productId] === undefined) {
+    /// run queries
+    productStylesById = await pool.query(productStylesByIdQuery);
+    productStylePhotos = await pool.query(productStylePhotosQuery);
+    productStyleSkus = await pool.query(productStyleSkusQuery);
+
+    cache[productId] = {
+      productStylesById: productStylesById,
+      productStylePhotos: productStylePhotos,
+      productStyleSkus: productStyleSkus
+    }
+
+  } else {
+    productStylesById = cache[productId].productStylesById;
+    productStylePhotos = cache[productId].productStylePhotos;
+    productStyleSkus = cache[productId].productStyleSkus;
+  }
+
 
   // then format data
     let productWithPhotosAndSkus = {
