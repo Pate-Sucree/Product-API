@@ -1,22 +1,22 @@
 require('newrelic');
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const port = 4000;
 const { Pool, Client } = require('pg');
 const querystring = require('querystring');
 
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'postgres',
-  password: 'kornelija123',
+  user:  process.env.USER || 'postgres',
+  host: process.env.DATABASE_URL || 'localhost',
+  database:'postgres',
+  password: process.env.PASSWORD || 'kornelija123',
   port: 5432,
-})
-
+});
 
 let cache = {};
 
-
+app.use(cors());
 // gets a list of products with page and count query params
 app.get('/products', async (req, res) => {
 
