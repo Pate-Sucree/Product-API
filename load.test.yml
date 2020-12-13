@@ -10,4 +10,4 @@ scenarios:
   - name: "Product Style by Id"
     flow:
       - get:
-          url: "/products"
+          url: "/products/3/styles"
