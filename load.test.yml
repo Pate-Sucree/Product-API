@@ -1,0 +1,13 @@
+config:
+  target: "http://54.221.168.255:9005"
+  phases:
+    - duration: 30
+      arrivalRate: 110
+      name: Sustained load
+scenarios:
+  # We define one scenario:
+
+  - name: "Product Style by Id"
+    flow:
+      - get:
+          url: "/products/3/styles"

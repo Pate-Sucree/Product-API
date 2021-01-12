@@ -1,0 +1,21 @@
+{
+  "name": "Product-API",
+  "version": "1.0.0",
+  "description": "Product service for legacy code. ",
+  "main": "server.js",
+  "repository": "https://github.com/Pate-Sucree/Product-API.git",
+  "author": "Kornelija Laucius <kornelija.janusaite@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "artillery": "^1.6.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "newrelic": "^7.0.2",
+    "nodemon": "^2.0.6",
+    "pg": "^8.5.1",
+    "querystring": "^0.2.0"
+  },
+  "scripts": {
+    "start": "nodemon ./server.js"
+  }
+}
